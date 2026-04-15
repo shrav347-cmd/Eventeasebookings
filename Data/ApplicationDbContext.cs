@@ -18,7 +18,7 @@ namespace EventeaseBookingSystem.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Prevent multiple cascade paths
+            // this Prevent multiple cascade paths
             modelBuilder.Entity<Event>()
                 .HasOne(e => e.Venue)
                 .WithMany(v => v.Events)
