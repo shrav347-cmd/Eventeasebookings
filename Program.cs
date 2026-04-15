@@ -13,7 +13,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure Pipeline
+// Configure Pipelinee
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
