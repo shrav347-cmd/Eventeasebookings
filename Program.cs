@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// add services
 builder.Services.AddControllersWithViews();
 
 // register DbContext with SQL Server
