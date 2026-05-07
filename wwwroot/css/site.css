@@ -1,5 +1,7 @@
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,24 +10,180 @@ html {
     }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-    position: relative;
-    min-height: 100%;
+:root {
+    --indian-maroon: #5c0f0f;
+    --indian-red: #8b1e1e;
+    --indian-orange: #d95f02;
+    --indian-gold: #f2b705;
+    --indian-cream: #fff7e6;
+    --indian-green: #1f6f4a;
+    --text-dark: #2b1b12;
 }
 
 body {
     margin-bottom: 60px;
+    background: radial-gradient(circle at top left, rgba(242, 183, 5, 0.18), transparent 30%), radial-gradient(circle at bottom right, rgba(217, 95, 2, 0.18), transparent 30%), var(--indian-cream);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    background: linear-gradient(90deg, var(--indian-maroon), var(--indian-red), var(--indian-orange)) !important;
+    border-bottom: 4px solid var(--indian-gold);
+}
+
+.navbar-brand,
+.navbar-nav .nav-link {
+    color: white !important;
+    font-weight: 600;
+}
+
+    .navbar-nav .nav-link:hover {
+        color: var(--indian-gold) !important;
+    }
+
+/* Main container */
+.container main,
+main {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(92, 15, 15, 0.08);
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: var(--indian-maroon);
+    font-weight: 700;
+}
+
+h1 {
+    border-left: 6px solid var(--indian-gold);
+    padding-left: 12px;
+    margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(90deg, var(--indian-red), var(--indian-orange));
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, var(--indian-maroon), var(--indian-red));
+        color: var(--indian-gold);
+    }
+
+.btn-warning {
+    background-color: var(--indian-gold);
+    border: none;
+    color: #2b1b12;
+    font-weight: 600;
+}
+
+.btn-info {
+    background-color: var(--indian-green);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-danger {
+    background-color: #9c1c1c;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-secondary {
+    background-color: #7a5c3c;
+    border: none;
+}
+
+/* Focus states */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(242, 183, 5, 0.55);
+}
+
+/* Tables */
+.table {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(139, 30, 30, 0.15);
+}
+
+    .table thead,
+    .table-dark {
+        background: linear-gradient(90deg, var(--indian-maroon), var(--indian-red)) !important;
+        color: white;
+    }
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(242, 183, 5, 0.08);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(217, 95, 2, 0.12);
+}
+
+/* Forms */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 1px solid rgba(139, 30, 30, 0.35);
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--indian-gold);
+    }
+
+/* Alerts */
+.alert-danger {
+    background-color: #ffe5e5;
+    border-left: 6px solid #b71c1c;
+    color: #7a0f0f;
+}
+
+.alert-success {
     background-color: #e8f5e9;
+    border-left: 6px solid var(--indian-green);
+    color: #14532d;
+}
 
-    .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-        color: var(--bs-secondary-color);
-        text-align: end;
+/* Images */
+img {
+    border-radius: 10px;
+    border: 2px solid rgba(242, 183, 5, 0.5);
+}
+
+/* Footer */
+.footer {
+    background-color: var(--indian-maroon);
+    color: white;
+    border-top: 4px solid var(--indian-gold);
+}
+
+    .footer a {
+        color: var(--indian-gold);
     }
 
-    .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-        text-align: start;
-    }
+/* Floating form placeholders */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
