@@ -20,10 +20,26 @@ namespace EventeaseBookingSystem.Controllers
         }
 
         // GET: Bookings
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var applicationDbContext = _context.Bookings.Include(b => b.Event).Include(b => b.Venue);
-            return View(await applicationDbContext.ToListAsync());
+            var bookings = _context.Bookings
+                .Include(b => b.Event)
+                .Include(b => b.Venue)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                bookings = bookings.Where(b =>
+                    b.Event.EventName.Contains(searchString) ||
+                    b.Venue.VenueName.Contains(searchString) ||
+                    b.CustomerName.Contains(searchString) ||
+                    b.BookingID.ToString().Contains(searchString)
+                );
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+
+            return View(await bookings.ToListAsync());
         }
 
         // GET: Bookings/Details/5
@@ -38,6 +54,7 @@ namespace EventeaseBookingSystem.Controllers
                 .Include(b => b.Event)
                 .Include(b => b.Venue)
                 .FirstOrDefaultAsync(m => m.BookingID == id);
+
             if (booking == null)
             {
                 return NotFound();
@@ -49,7 +66,6 @@ namespace EventeaseBookingSystem.Controllers
         // GET: Bookings/Create
         public IActionResult Create()
         {
-            //  Show VenueName and EventName 
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName");
             ViewData["EventID"] = new SelectList(_context.Events, "EventID", "EventName");
             return View();
@@ -60,16 +76,66 @@ namespace EventeaseBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingID,VenueID,EventID,CustomerName,StartDate,EndDate")] Booking booking)
         {
+            if (booking.StartDate >= booking.EndDate)
+            {
+                ModelState.AddModelError("", "The booking end date/time must be after the start date/time.");
+            }
+
+            bool overlappingBooking = await _context.Bookings.AnyAsync(b =>
+                b.VenueID == booking.VenueID &&
+                booking.StartDate < b.EndDate &&
+                booking.EndDate > b.StartDate
+            );
+
+            if (overlappingBooking)
+            {
+                ModelState.AddModelError("", "This venue is already booked for the selected date/time.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
                 await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Booking created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            // Redisplay dropdowns with names and preselected values
+
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", booking.VenueID);
             ViewData["EventID"] = new SelectList(_context.Events, "EventID", "EventName", booking.EventID);
+
             return View(booking);
+        }
+
+        public async Task<IActionResult> Report()
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Venue)
+                .Include(b => b.Event)
+                .ToListAsync();
+
+            var bookingsPerVenue = bookings
+                .GroupBy(b => b.Venue.VenueName)
+                .Select(g => new ReportViewModel
+                {
+                    Name = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            var bookingsPerEvent = bookings
+                .GroupBy(b => b.Event.EventName)
+                .Select(g => new ReportViewModel
+                {
+                    Name = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            ViewBag.BookingsPerVenue = bookingsPerVenue;
+            ViewBag.BookingsPerEvent = bookingsPerEvent;
+
+            return View();
         }
 
         // GET: Bookings/Edit/5
@@ -80,7 +146,6 @@ namespace EventeaseBookingSystem.Controllers
                 return NotFound();
             }
 
-            // Load Venue and Event 
             var booking = await _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.Event)
@@ -91,7 +156,9 @@ namespace EventeaseBookingSystem.Controllers
                 return NotFound();
             }
 
-            
+            ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", booking.VenueID);
+            ViewData["EventID"] = new SelectList(_context.Events, "EventID", "EventName", booking.EventID);
+
             return View(booking);
         }
 
@@ -105,12 +172,31 @@ namespace EventeaseBookingSystem.Controllers
                 return NotFound();
             }
 
+            if (booking.StartDate >= booking.EndDate)
+            {
+                ModelState.AddModelError("", "The booking end date/time must be after the start date/time.");
+            }
+
+            bool overlappingBooking = await _context.Bookings.AnyAsync(b =>
+                b.BookingID != booking.BookingID &&
+                b.VenueID == booking.VenueID &&
+                booking.StartDate < b.EndDate &&
+                booking.EndDate > b.StartDate
+            );
+
+            if (overlappingBooking)
+            {
+                ModelState.AddModelError("", "This venue is already booked for the selected date/time.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(booking);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Booking updated successfully.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -123,14 +209,26 @@ namespace EventeaseBookingSystem.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            // If invalid, reload with includes to show names again
-            var reloadedBooking = await _context.Bookings
+
+            var bookingWithDetails = await _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.Event)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingID == booking.BookingID);
-            return View(reloadedBooking ?? booking);
+
+            if (bookingWithDetails != null)
+            {
+                booking.Venue = bookingWithDetails.Venue;
+                booking.Event = bookingWithDetails.Event;
+            }
+
+            ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", booking.VenueID);
+            ViewData["EventID"] = new SelectList(_context.Events, "EventID", "EventName", booking.EventID);
+
+            return View(booking);
         }
 
         // GET: Bookings/Delete/5
@@ -145,6 +243,7 @@ namespace EventeaseBookingSystem.Controllers
                 .Include(b => b.Event)
                 .Include(b => b.Venue)
                 .FirstOrDefaultAsync(m => m.BookingID == id);
+
             if (booking == null)
             {
                 return NotFound();
@@ -159,12 +258,16 @@ namespace EventeaseBookingSystem.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
-            if (booking != null)
+
+            if (booking == null)
             {
-                _context.Bookings.Remove(booking);
+                return NotFound();
             }
 
+            _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Booking deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 

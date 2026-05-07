@@ -11,45 +11,41 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Create">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <!-- Event Name -->
+            <input type="hidden" asp-for="ImageURL" />
+
             <div class="form-group mb-3">
                 <label asp-for="EventName" class="control-label"></label>
                 <input asp-for="EventName" class="form-control" />
                 <span asp-validation-for="EventName" class="text-danger"></span>
             </div>
 
-            <!-- Start Date -->
             <div class="form-group mb-3">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" type="date" class="form-control" />
+                <input asp-for="StartDate" type="datetime-local" class="form-control" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
 
-            <!-- End Date -->
             <div class="form-group mb-3">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" type="date" class="form-control" />
+                <input asp-for="EndDate" type="datetime-local" class="form-control" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
 
-            <!-- Venue Dropdown -->
             <div class="form-group mb-3">
                 <label asp-for="VenueID" class="control-label"></label>
                 <select asp-for="VenueID" class="form-control" asp-items="ViewBag.VenueID"></select>
+                <span asp-validation-for="VenueID" class="text-danger"></span>
             </div>
 
-            <!-- Image URL -->
             <div class="form-group mb-3">
-                <label asp-for="ImageURL" class="control-label"></label>
-                <input asp-for="ImageURL" class="form-control" placeholder="Paste image URL here" />
-                <span asp-validation-for="ImageURL" class="text-danger"></span>
+                <label class="control-label">Upload Event Image</label>
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
             </div>
 
-            <!-- Submit -->
             <div class="form-group mt-3">
                 <input type="submit" value="Create Event" class="btn btn-primary" />
                 <a asp-action="Index" class="btn btn-secondary">Back</a>

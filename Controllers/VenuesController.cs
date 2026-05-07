@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EventeaseBookingSystem.Data;
 using EventeaseBookingSystem.Models;
@@ -35,6 +34,7 @@ namespace EventeaseBookingSystem.Controllers
 
             var venue = await _context.Venues
                 .FirstOrDefaultAsync(m => m.VenueID == id);
+
             if (venue == null)
             {
                 return NotFound();
@@ -50,8 +50,6 @@ namespace EventeaseBookingSystem.Controllers
         }
 
         // POST: Venues/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("VenueID,VenueName,Location")] Venue venue)
@@ -60,8 +58,11 @@ namespace EventeaseBookingSystem.Controllers
             {
                 _context.Add(venue);
                 await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Venue created successfully.";
                 return RedirectToAction(nameof(Index));
             }
+
             return View(venue);
         }
 
@@ -74,16 +75,16 @@ namespace EventeaseBookingSystem.Controllers
             }
 
             var venue = await _context.Venues.FindAsync(id);
+
             if (venue == null)
             {
                 return NotFound();
             }
+
             return View(venue);
         }
 
         // POST: Venues/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("VenueID,VenueName,Location")] Venue venue)
@@ -99,6 +100,8 @@ namespace EventeaseBookingSystem.Controllers
                 {
                     _context.Update(venue);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Venue updated successfully.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -111,8 +114,10 @@ namespace EventeaseBookingSystem.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(venue);
         }
 
@@ -126,6 +131,7 @@ namespace EventeaseBookingSystem.Controllers
 
             var venue = await _context.Venues
                 .FirstOrDefaultAsync(m => m.VenueID == id);
+
             if (venue == null)
             {
                 return NotFound();
@@ -140,12 +146,25 @@ namespace EventeaseBookingSystem.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var venue = await _context.Venues.FindAsync(id);
-            if (venue != null)
+
+            if (venue == null)
             {
-                _context.Venues.Remove(venue);
+                return NotFound();
             }
 
+            bool hasBookings = await _context.Bookings
+                .AnyAsync(b => b.VenueID == id);
+
+            if (hasBookings)
+            {
+                TempData["ErrorMessage"] = "This venue cannot be deleted because it has existing bookings.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Venues.Remove(venue);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Venue deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 
