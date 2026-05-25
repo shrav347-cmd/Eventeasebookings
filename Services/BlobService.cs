@@ -1,13 +1,20 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace EventeaseBookingSystem.Services
 {
     public class BlobService
     {
-        private readonly string connectionString = "UseDevelopmentStorage=true";
+        private readonly string connectionString;
         private readonly string containerName = "venue-images";
+
+        public BlobService(IConfiguration configuration)
+        {
+            connectionString = configuration.GetConnectionString("AzureBlobStorage")
+                ?? throw new InvalidOperationException("AzureBlobStorage connection string is missing.");
+        }
 
         public async Task<string> UploadFileAsync(IFormFile file)
         {

@@ -52,7 +52,7 @@ namespace EventeaseBookingSystem.Controllers
         // POST: Venues/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VenueID,VenueName,Location")] Venue venue)
+        public async Task<IActionResult> Create([Bind("VenueID,VenueName,Location,Capacity")] Venue venue)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace EventeaseBookingSystem.Controllers
         // POST: Venues/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VenueID,VenueName,Location")] Venue venue)
+        public async Task<IActionResult> Edit(int id, [Bind("VenueID,VenueName,Location,Capacity")] Venue venue)
         {
             if (id != venue.VenueID)
             {
@@ -155,9 +155,12 @@ namespace EventeaseBookingSystem.Controllers
             bool hasBookings = await _context.Bookings
                 .AnyAsync(b => b.VenueID == id);
 
-            if (hasBookings)
+            bool hasEvents = await _context.Events
+                .AnyAsync(e => e.VenueID == id);
+
+            if (hasBookings || hasEvents)
             {
-                TempData["ErrorMessage"] = "This venue cannot be deleted because it has existing bookings.";
+                TempData["ErrorMessage"] = "This venue cannot be deleted because it is linked to existing events or bookings.";
                 return RedirectToAction(nameof(Index));
             }
 

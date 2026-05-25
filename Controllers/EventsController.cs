@@ -15,16 +15,21 @@ namespace EventeaseBookingSystem.Controllers
     public class EventsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly BlobService _blobService;
 
-        public EventsController(ApplicationDbContext context)
+        public EventsController(ApplicationDbContext context, BlobService blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: Events
         public async Task<IActionResult> Index()
         {
-            var events = _context.Events.Include(e => e.Venue);
+            var events = _context.Events
+                .Include(e => e.Venue)
+                .Include(e => e.EventType);
+
             return View(await events.ToListAsync());
         }
 
@@ -38,6 +43,7 @@ namespace EventeaseBookingSystem.Controllers
 
             var @event = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.EventID == id);
 
             if (@event == null)
@@ -52,6 +58,7 @@ namespace EventeaseBookingSystem.Controllers
         public IActionResult Create()
         {
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName");
+            ViewData["EventTypeID"] = new SelectList(_context.EventTypes, "EventTypeID", "EventTypeName");
             return View();
         }
 
@@ -59,13 +66,12 @@ namespace EventeaseBookingSystem.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("EventID,EventName,StartDate,EndDate,VenueID,ImageURL")] Event @event,
+            [Bind("EventID,EventName,StartDate,EndDate,VenueID,EventTypeID,ImageURL")] Event @event,
             IFormFile imageFile)
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                var blobService = new BlobService();
-                string imageUrl = await blobService.UploadFileAsync(imageFile);
+                string imageUrl = await _blobService.UploadFileAsync(imageFile);
                 @event.ImageURL = imageUrl;
 
                 ModelState.Remove("ImageURL");
@@ -73,6 +79,11 @@ namespace EventeaseBookingSystem.Controllers
             else
             {
                 ModelState.AddModelError("", "Please select an event image.");
+            }
+
+            if (@event.StartDate >= @event.EndDate)
+            {
+                ModelState.AddModelError("", "The event end date must be after the start date.");
             }
 
             if (ModelState.IsValid)
@@ -85,6 +96,8 @@ namespace EventeaseBookingSystem.Controllers
             }
 
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", @event.VenueID);
+            ViewData["EventTypeID"] = new SelectList(_context.EventTypes, "EventTypeID", "EventTypeName", @event.EventTypeID);
+
             return View(@event);
         }
 
@@ -104,6 +117,8 @@ namespace EventeaseBookingSystem.Controllers
             }
 
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", @event.VenueID);
+            ViewData["EventTypeID"] = new SelectList(_context.EventTypes, "EventTypeID", "EventTypeName", @event.EventTypeID);
+
             return View(@event);
         }
 
@@ -112,7 +127,7 @@ namespace EventeaseBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            [Bind("EventID,EventName,StartDate,EndDate,VenueID,ImageURL")] Event @event,
+            [Bind("EventID,EventName,StartDate,EndDate,VenueID,EventTypeID,ImageURL")] Event @event,
             IFormFile imageFile)
         {
             if (id != @event.EventID)
@@ -122,8 +137,7 @@ namespace EventeaseBookingSystem.Controllers
 
             if (imageFile != null && imageFile.Length > 0)
             {
-                var blobService = new BlobService();
-                string imageUrl = await blobService.UploadFileAsync(imageFile);
+                string imageUrl = await _blobService.UploadFileAsync(imageFile);
                 @event.ImageURL = imageUrl;
 
                 ModelState.Remove("ImageURL");
@@ -139,6 +153,11 @@ namespace EventeaseBookingSystem.Controllers
                     @event.ImageURL = existingEvent.ImageURL;
                     ModelState.Remove("ImageURL");
                 }
+            }
+
+            if (@event.StartDate >= @event.EndDate)
+            {
+                ModelState.AddModelError("", "The event end date must be after the start date.");
             }
 
             if (ModelState.IsValid)
@@ -166,6 +185,8 @@ namespace EventeaseBookingSystem.Controllers
             }
 
             ViewData["VenueID"] = new SelectList(_context.Venues, "VenueID", "VenueName", @event.VenueID);
+            ViewData["EventTypeID"] = new SelectList(_context.EventTypes, "EventTypeID", "EventTypeName", @event.EventTypeID);
+
             return View(@event);
         }
 
@@ -179,6 +200,7 @@ namespace EventeaseBookingSystem.Controllers
 
             var @event = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.EventID == id);
 
             if (@event == null)
