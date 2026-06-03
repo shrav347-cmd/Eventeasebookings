@@ -1,48 +1,72 @@
 ﻿@model EventeaseBookingSystem.Models.Event
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Event Details";
 }
 
-<h1>Details</h1>
+<h1>Event Details</h1>
 
 <div>
     <h4>Event</h4>
     <hr />
+
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EventName)
+        <dt class="col-sm-2">
+            Event Name
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EventName)
+        <dd class="col-sm-10">
+            @Model.EventName
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
+
+        <dt class="col-sm-2">
+            Event Type
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
+        <dd class="col-sm-10">
+            @Model.EventType?.EventTypeName
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
+
+        <dt class="col-sm-2">
+            Start Date
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EndDate)
+        <dd class="col-sm-10">
+            @Model.StartDate.ToString("dd MMM yyyy HH:mm")
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Venue)
+
+        <dt class="col-sm-2">
+            End Date
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Venue.VenueID)
+        <dd class="col-sm-10">
+            @Model.EndDate.ToString("dd MMM yyyy HH:mm")
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageURL)
+
+        <dt class="col-sm-2">
+            Venue
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageURL)
+        <dd class="col-sm-10">
+            @Model.Venue?.VenueName
+        </dd>
+
+        <dt class="col-sm-2">
+            Image
+        </dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.ImageURL))
+            {
+                <img src="@Model.ImageURL"
+                     alt="@Model.EventName"
+                     width="200"
+                     height="130"
+                     style="object-fit:cover;" />
+            }
+            else
+            {
+                <span class="text-muted">No image uploaded.</span>
+            }
         </dd>
     </dl>
 </div>
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.EventID">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.EventID">Edit</a>
+    <a class="btn btn-secondary" asp-action="Index">Back to List</a>
 </div>

@@ -68,9 +68,7 @@ namespace EventeaseBookingSystem.Controllers
                 bookings = bookings.Where(b => b.EndDate <= endDate.Value);
             }
 
-            // Venue availability filter
-            // Booked = show bookings that exist
-            // Available = show no bookings for selected venue/date range
+            // Venue availability check
             if (!string.IsNullOrWhiteSpace(availability) && availability == "Available")
             {
                 if (venueId.HasValue && venueId.Value > 0 && startDate.HasValue && endDate.HasValue)
@@ -180,6 +178,7 @@ namespace EventeaseBookingSystem.Controllers
             var bookings = await _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.Event)
+                    .ThenInclude(e => e.EventType)
                 .ToListAsync();
 
             var bookingsPerVenue = bookings
@@ -217,6 +216,7 @@ namespace EventeaseBookingSystem.Controllers
             var booking = await _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.Event)
+                    .ThenInclude(e => e.EventType)
                 .FirstOrDefaultAsync(b => b.BookingID == id);
 
             if (booking == null)
@@ -284,6 +284,7 @@ namespace EventeaseBookingSystem.Controllers
             var bookingWithDetails = await _context.Bookings
                 .Include(b => b.Venue)
                 .Include(b => b.Event)
+                    .ThenInclude(e => e.EventType)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.BookingID == booking.BookingID);
 

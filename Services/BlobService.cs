@@ -28,7 +28,15 @@ namespace EventeaseBookingSystem.Services
 
             await containerClient.CreateIfNotExistsAsync();
 
-            await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
+            try
+            {
+                await containerClient.SetAccessPolicyAsync(PublicAccessType.Blob);
+            }
+            catch
+            {
+                // If Azure blocks public access, upload can still continue.
+                // The image URL may not be publicly visible unless public blob access is enabled.
+            }
 
             string fileExtension = Path.GetExtension(file.FileName);
             string fileName = $"{Guid.NewGuid()}{fileExtension}";
