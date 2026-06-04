@@ -127,7 +127,7 @@ namespace EventeaseBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            [Bind("EventID,EventName,StartDate,EndDate,VenueID,EventTypeID,ImageURL")] Event @event,
+            [Bind("EventID,EventName,StartDate,EndDate,venueID,EventTypeID,ImageURL")] Event @event,
             IFormFile imageFile)
         {
             if (id != @event.EventID)
